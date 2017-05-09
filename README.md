@@ -2,6 +2,7 @@
 
 ## 네트워킹
  * [테스트 클라이언트 만들기](doc/test_client.md)
+ * [네트워크 지연시간 시뮬레이션](doc/latency_simulation.md)
 
 ## 파이버
  * [async/await](doc/async_await.md)
