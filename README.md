@@ -11,6 +11,7 @@
  * [파이버를 사용하는 유닛 테스트 작성](doc/fiber_unit_test.md)
 
 ## 데이터베이스
+ * [데이터 저장소 개요](doc/db_outline.md)
 
 ## 스크립팅
  * [서버에서 루아 스크립트 사용하기](doc/lua_scripting.md)
