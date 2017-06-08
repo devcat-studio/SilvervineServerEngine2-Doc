@@ -12,6 +12,7 @@
 
 ## 데이터베이스
  * [데이터 저장소 개요](doc/db_outline.md)
+ * [트랜잭션](doc/db_transaction.md)
 
 ## 스크립팅
  * [서버에서 루아 스크립트 사용하기](doc/lua_scripting.md)
