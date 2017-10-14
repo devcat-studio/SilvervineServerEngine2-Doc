@@ -17,6 +17,9 @@
  * [데이터 저장소 개요](doc/db_outline.md)
  * [트랜잭션](doc/db_transaction.md)
 
+## 빌드 도구
+ * [코드 생성기](doc/codegen.md)
+
 ## 가상 액터
  * 개념
  * 사용법
@@ -24,7 +27,6 @@
 ## 웹서버
  * Http 서버 열기
  * 웹소켓 핸들링하기
-
 ## 스크립팅
  * [서버에서 루아 스크립트 사용하기](doc/lua_scripting.md)
 
