@@ -45,7 +45,9 @@ TODO: 설명 추가
 ```
 "$(ProjectDir)..\..\Server\CodeGen\bin\CodeGen.exe" "$(ProjectDir)*.schema" && copy nul "$(ProjectDir)_dummy.cs" > nul`
 ```
-그리고 .schema 파일로부터 생성되는 소스코드가 들어있는 프로젝트들을 각각 솔루션 탐색기에서 우클릭해서 `빌드 종속성 > 프로젝트 종속성...` 을 선택하시고, 스키마 프로젝트에 종속되도록 체크하세요.
+그리고 'CodeGen -> 스키마 프로젝트 -> 생성되는 소스코드가 들어있는 프로젝트' 순서로 빌드되어야 하므로,
+.schema 파일로부터 생성되는 소스코드가 들어있는 프로젝트들을 각각 솔루션 탐색기에서 우클릭해서 `빌드 종속성 > 프로젝트 종속성...` 을 선택하시고
+스키마 프로젝트에 종속되도록 체크하세요. 같은 방법으로 스키마 프로젝트를 CodeGen 프로젝트에 종속되도록 설정하세요.
 
 SSE2.sln의 Silvervine.Schema 프로젝트를 참고하시면 됩니다.
 
@@ -61,6 +63,8 @@ SSE2.sln의 Silvervine.Schema 프로젝트를 참고하시면 됩니다.
 ExtendedCodeGen 프로젝트에 JsonMessaging과 BinaryMessaging 확장이 들어있습니다.
 대부분의 프로젝트에서 메시지 직렬화와 핸들러 구현이 필요할 테니,
 이것 중 하나를 골라서 여러분의 프로젝트로 복사해 가시길 권장합니다.
+
+그리고 스키마 프로젝트에서 Silvervine.CodeGen 대신 여러분의 코드 생성기 프로젝트에 종속되도록 설정하세요.
 
 
 ### Visual Studio에서 .schema를 문법 강조하기
