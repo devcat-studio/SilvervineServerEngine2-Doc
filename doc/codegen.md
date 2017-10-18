@@ -43,7 +43,7 @@ TODO: 설명 추가
 
 스키마 프로젝트의 빌드 전 이벤트에 다음과 비슷한 명령을 넣으세요.
 ```
-"$(ProjectDir)..\..\Server\CodeGen\bin\CodeGen.exe" "$(ProjectDir)*.schema" && copy nul "$(ProjectDir)_dummy.cs" > nul`
+"$(ProjectDir)..\..\Server\CodeGen\bin\CodeGen.exe" "$(ProjectDir)*.schema" && copy nul "$(ProjectDir)_dummy.cs" > nul
 ```
 그리고 'CodeGen -> 스키마 프로젝트 -> 생성되는 소스코드가 들어있는 프로젝트' 순서로 빌드되어야 하므로,
 .schema 파일로부터 생성되는 소스코드가 들어있는 프로젝트들을 각각 솔루션 탐색기에서 우클릭해서 `빌드 종속성 > 프로젝트 종속성...` 을 선택하시고
