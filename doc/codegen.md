@@ -40,10 +40,11 @@ TODO: 설명 추가
 > C# 소스코드가 하나도 들어있지 않으면 빌드를 할 필요가 없는 상태에서도 다시 빌드를 하는 문제가 있습니다.
 > 코드 생성기가 작업을 완료할 때마다 C# 소스코드의 날짜를 최신으로 갱신하면
 > 그런 문제가 발생하지 않습니다. `-_-;`
+> Source/Proto/Silvervine.Schema 프로젝트의 _dummy.schema 파일을 참고하세요.
 
 스키마 프로젝트의 빌드 전 이벤트에 다음과 비슷한 명령을 넣으세요.
 ```
-"$(ProjectDir)..\..\Server\CodeGen\bin\CodeGen.exe" "$(ProjectDir)*.schema" && copy nul "$(ProjectDir)_dummy.cs" > nul
+"$(ProjectDir)..\..\Server\CodeGen\bin\CodeGen.exe" "$(ProjectDir)*.schema"
 ```
 그리고 'CodeGen -> 스키마 프로젝트 -> 생성되는 소스코드가 들어있는 프로젝트' 순서로 빌드되어야 하므로,
 .schema 파일로부터 생성되는 소스코드가 들어있는 프로젝트들을 각각 솔루션 탐색기에서 우클릭해서 `빌드 종속성 > 프로젝트 종속성...` 을 선택하시고
