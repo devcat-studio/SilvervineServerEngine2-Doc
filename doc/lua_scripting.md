@@ -27,7 +27,7 @@ require로 로드된 모듈들 각각의 원본 소스코드의 최종 수정 �
 - luasocket을 쓸 수 있지만, 프로토타이핑/디버깅 용도로만 사용하십시오! luasocket의 I/O 모델은 실버바인 서버 엔진 2와 다르기 때문에 서버 성능을 크게 저하시키고 서비스 품질을 떨어뜨릴 수 있습니다.
 - C 확장 모듈을 추가하고 싶다면 LuaVMMgr.cpp 의 InitializeApplicationSpecificExtensions에서 초기화하십시오.<br>
 ※ 현재 이 방식은 엔진 C++ 소스코드를 수정해야 하므로 권장하지 않습니다. dll로 C 확장 모듈을 만들 수 있도록 수정할 예정입니다.
-- Core.class는 기본 지원되지 않습니다. 필요하다면 루아 코드에서 직접 정의해서 사용하십시오. Source/Sample.Gideros/ServerLua/Class.lua를 복사해 가시면 됩니다.
+- Core.class는 기본 지원되지 않습니다. 필요하다면 루아 코드에서 직접 정의해서 사용하십시오. (샘플 리파지터리)/Gideros/ServerLua/Class.lua를 복사해 가시면 됩니다.
  
 ## 루아 VM 수정 내역
 - Visual Studio Code 디버거 확장을 붙일 수 있도록 OP_HALT 패치를 적용했습니다.
