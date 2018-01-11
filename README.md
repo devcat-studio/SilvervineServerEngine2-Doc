@@ -18,14 +18,14 @@
  * [트랜잭션](doc/db_transaction.md)
 
 ## 보조 저장소
- * [보조 저장소 개요](doc_aux_storage_outline.md)
- * [KeyValueStorage](doc_aux_storage_key_value_storage.md)
- * [Cache](doc_aux_storage_cache.md)
- * [Queue](doc_aux_storage_queue.md)
- * [Ephemeral](doc_aux_storage_ephemeral.md)
- * [Ranking](doc_aux_storage_ranking.md)
- * [StaticIndexDeque](doc_aux_storage_static_index_deque.md)
- * [TimeSeriesData](doc_aux_storage_time_series_data.md)
+ * [보조 저장소 개요](doc/aux_storage_outline.md)
+ * [KeyValueStorage](doc/aux_storage_key_value_storage.md)
+ * [Cache](doc/aux_storage_cache.md)
+ * [Queue](doc/aux_storage_queue.md)
+ * [Ephemeral](doc/aux_storage_ephemeral.md)
+ * [Ranking](doc/aux_storage_ranking.md)
+ * [StaticIndexDeque](doc/aux_storage_static_index_deque.md)
+ * [TimeSeriesData](doc/aux_storage_time_series_data.md)
 
 ## 빌드 도구
  * [코드 생성기](doc/codegen.md)
