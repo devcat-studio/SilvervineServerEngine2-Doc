@@ -8,7 +8,7 @@
   
 이런 설계에서는 게임 로직 코드가 동작하는 메인 스레드에서 blocking I/O를 실행하면,  
 I/O 결과가 돌아올 때까지 메인 스레드 전체가 멈추기 때문에, 심각한 성능 저하가 발생합니다.  
-그런데 .NET 내장 라이브러리는 물론이고, 수많은 서드파티 라이브러리들이 blocking I/O 모델을 채택하고 있기 때문에,   엔진이 제공하는 API 이외의 방법으로 I/O(주로 외부 시스템과의 통신이겠죠)를 할 때는 매우 주의해야 합니다.  
+그런데 .NET 내장 라이브러리는 물론이고, 수많은 서드파티 라이브러리들이 blocking I/O 모델을 채택하고 있기 때문에, 엔진이 제공하는 API 이외의 방법으로 I/O(주로 외부 시스템과의 통신이겠죠)를 할 때는 매우 주의해야 합니다.  
  
 ## 백그라운드 스레드에서 작업을 수행한 후 메인 스레드에서 계속하기
 실버바인 서버 엔진 2에서는 blocking I/O를 메인 스레드가 아니라 백그라운드 스레드에서 수행하고,  
@@ -18,9 +18,9 @@ Func<T> work;
 var result = await EngineAPI.ThreadPool.Execute<T>(work);
 ```
 이렇게 하면 됩니다.   
-work는 .NET 프레임워크에서 제공하는 ThreadPool.ExecuteInThreadPool 을 통해 실행됩니다.   
-work가 정상적으로 수행을 마치면 그 결과가 await 식의 결과로 전달됩니다.   
-work 안에서 예외가 발생하면 그 예외가 Exception으로 한번 감싸져서 호출한 파이버로 전달됩니다.  
+work는 .NET 프레임워크에서 제공하는 `ThreadPool.ExecuteInThreadPool` 을 통해 실행됩니다.   
+work가 정상적으로 수행을 마치면 그 결과가 `await` 식의 결과로 전달됩니다.   
+work 안에서 예외가 발생하면 그 예외가 `Exception`으로 한번 감싸져서 호출한 파이버로 전달됩니다.  
 work는 다른 스레드에서 실행되므로, 메인 스레드와 공유하는 상태를 변경하지 않도록 주의하셔야 합니다.
 
 ## 백그라운드 스레드에 작업을 발주하고 결과를 무시하기
@@ -34,6 +34,6 @@ EngineAPI.ThreadPool.FireAndForget(() => {})
 ```
 EngineAPI.ThreadPool.QueueToMainThread(() => {})
 ```
-인자로 넘긴 Action이 메인 스레드 안에서 실행되게 됩니다.
+인자로 넘긴 `Action`이 메인 스레드 안에서 실행되게 됩니다.
  
 쉽죠?
