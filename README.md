@@ -10,13 +10,16 @@
 ## 파이버
  * [async/await](doc/async_await.md)
  * [실버바인 서버엔진의 파이버](doc/fiber_in_silvervine_server_engine.md)
- * [백그라운드 스레드를 파이버와 어울려 사용하기](doc/background_thread.md)
  * [파이버를 사용하는 유닛 테스트 작성](doc/fiber_unit_test.md)
-
-## 데이터베이스
- * [데이터 저장소 개요](doc/db_outline.md)
+ * [백그라운드 스레드를 파이버와 어울려 사용하기](doc/background_thread.md)
+ 
+## DB
+ * [DB 개요](doc/db_outline.md)
  * [트랜잭션](doc/db_transaction.md)
 
+## 보조 저장소
+ * [보조 저장소 개요](doc_aux_storage_outline.md)
+ 
 ## 빌드 도구
  * [코드 생성기](doc/codegen.md)
 
@@ -27,6 +30,7 @@
 ## 웹서버
  * Http 서버 열기
  * 웹소켓 핸들링하기
+
 ## 스크립팅
  * [서버에서 루아 스크립트 사용하기](doc/lua_scripting.md)
 
