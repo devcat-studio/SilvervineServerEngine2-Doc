@@ -16,6 +16,9 @@
 ## DB
  * [DB 개요](doc/db_outline.md)
  * [트랜잭션](doc/db_transaction.md)
+ * [DB 내부 구현](doc/db_implementation.md)
+ * [로깅](doc/db_logging.md)
+ * [DB 설계 의도](doc/db_design.md)
 
 ## 보조 저장소
  * [보조 저장소 개요](doc/aux_storage_outline.md)
