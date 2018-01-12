@@ -43,19 +43,19 @@ ISessionHandler 보시면 모든 메서드에 Task가 달려 있지요.
 MMORPG라면 DB에 접근하는 요청보다는 메모리에서 처리가 끝나는 요청들이 더 많을 것입니다.
 그런 요청 하나하나마다 파이버를 중지/재개하는 비용이 걱정된다면 그냥 async 키워드를 떼고, Task에는 null을 리턴해도 됩니다.
 
-## 규칙: 다른 라이브러리가 리턴한 Task에는 .ToFiberTask() 를 부르자
+## 규칙: 다른 라이브러리가 리턴한 Task에는 .ToMainThread() 를 부르자
 [실버바인 서버엔진 2의 파이버](fiber_in_silvervine_server_engine.md)에서,
 모든 파이버가 메인 스레드에서 실행된다고 말씀드렸습니다.
 그런데 실버바인 서버엔진 2가 아닌 다른 .NET 태스크 라이브러리는, `Task`를 사용해서 `await`하고 나면
 그 이후에는 스케줄러를 통해서 다른 스레드로 바뀌어 실행되기 때문에,
 정상적으로 실행하기 어렵습니다.
 
-메인 스레드로 돌아오려면 리턴된 `Task`에 `.ToFiberTask()`를 호출한 결과에 `await`하게 만들면 됩니다.
+메인 스레드로 돌아오려면 리턴된 `Task`에 `.ToMainThread()`를 호출한 결과에 `await`하게 만들면 됩니다.
 
 ### 주의가 필요한 라이브러리의 예
  * `~Async`:<br>
  ![AWS S3 SDK](../img/thirdparty_async_library_example.png)<br>
  이 예는 AWS S3 SDK에서 가져왔습니다. `PutObjectAsync(...)`의 리턴 타입이 `Task<T>`인데,
  이것을 `await`하면 다른 스레드로 바뀌어 버립니다.
- 리턴된 `Task<T>`에 `.ToFiberTask()`를 호출한 것을 `await` 하여, 메인 스레드로 돌아오도록 합시다.
+ 리턴된 `Task<T>`에 `.ToMainThread()`를 호출한 것을 `await` 하여, 메인 스레드로 돌아오도록 합시다.
  
