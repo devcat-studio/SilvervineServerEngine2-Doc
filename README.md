@@ -32,8 +32,9 @@
  * [StaticIndexDeque](doc/aux_storage_static_index_deque.md)
  * [TimeSeriesData](doc/aux_storage_time_series_data.md)
 
-## 빌드 도구
+## 빌드
  * [코드 생성기](doc/codegen.md)
+ * [컴파일러 경고 무시](doc/compiler_warning_ignore.md)
 
 ## 가상 액터
  * 개념
