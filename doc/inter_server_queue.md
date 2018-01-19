@@ -1,14 +1,13 @@
-# 서버간 통신
-
-## EngineAPI.InterServerQueue
+# 서버간 통신 - EngineAPI.InterServerQueue
 
 ### 개요
 다른 서버 프로세스에 메시지를 보낼 수 있습니다.
 
+이것을 직접 사용해서 게임 로직을 만들기에는 번거롭고 복잡할 것입니다.
 메시지를 수신할 서버 프로세스를 `EngineAPI.CurrentProcessUniqueId` 를 통해 얻는
-고유 식별자를 통해 지정하기 때문에,
-`EngineAPI.InterServerQueue`를 직접 사용해서 게임 로직을 만들기에는
-번거롭고 복잡할 것입니다.
+고유 식별자를 통해 지정하기 때문입니다.
+
+대신 [서버간 통신 - 세션 핸들러에게 메시지 보내기](send_game_logic_message_to_server.md)를 활용하십시오.
 
 ### 사용법
 `Post`로 메시지를 보내면, 대상 프로세스에서 `AddHandler`로 설정했던 메시지 핸들러가 호출됩니다.

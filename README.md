@@ -4,9 +4,11 @@
  * 네트워킹 개요
  * 로그인 과정
  * 메시지 송수신
+ * 메시지 핸들링
  * [테스트 클라이언트 만들기](doc/test_client.md)
  * [네트워크 지연시간 시뮬레이션](doc/latency_simulation.md)
  * [서버간 통신 - InterServerQueue](doc/inter_server_queue.md)
+ * [서버간 통신 - 세션 핸들러에게 메시지 보내기](doc/send_game_logic_message_to_server.md)
 
 ## 파이버
  * [async/await](doc/async_await.md)
