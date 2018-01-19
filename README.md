@@ -16,7 +16,7 @@
  * [배경 작업 만들기](doc/background_job.md)
  * [파이버를 사용하는 유닛 테스트 작성](doc/fiber_unit_test.md)
  * [백그라운드 스레드를 파이버와 어울려 사용하기](doc/background_thread.md)
- 
+
 ## DB
  * [DB 개요](doc/db_outline.md)
  * [트랜잭션](doc/db_transaction.md)
@@ -51,3 +51,6 @@
 
 ## 런칭 준비
  * 개발서버에 올리기
+
+## 기타
+ * [세션 타이머](/doc/session_timer.md)
