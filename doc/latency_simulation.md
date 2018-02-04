@@ -18,6 +18,8 @@
 var actualHandler = new TestSessionHandler(param.SessionId);
 return EngineAPI.Networking.BeginSimulatingReceiveLatency(actualHandler, TimeSpan.FromSeconds(0.2), 0.05);
 ```
+두번째 인자가 `baseDelay`, 세번째 인자가 `lossRate`입니다.
+리턴되는 객체의 프로퍼티를 조작해서 나중에도 `baseDelay`와 `lossRate`를 바꿀 수 있습니다.
  
 ## 서버 → 클라이언트 전송 레이턴시 시뮬레이션
 서버의 세션이 생성되는 시점, 혹은 아무 때나 아래 엔진 API를 호출하십시오.
