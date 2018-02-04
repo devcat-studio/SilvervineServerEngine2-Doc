@@ -13,14 +13,11 @@
 ![latency_simulation_graph.png](../img/latency_simulation_graph.png)
  
 ## 클라이언트 → 서버 전송 레이턴시 시뮬레이션
-서버의 로그인 프로세서에서 세션핸들러를 생성할 때, 아래와 같이 `LatencySimulatingSessionHandlerFilter`로 세션핸들러를 감싸서 리턴합니다.
+서버의 로그인 프로세서에서 세션핸들러를 생성할 때, 아래와 같이 BeginSimulatingReceiveLatency 호출해서 세션핸들러를 감싸서 리턴합니다.
 ```
-var filter = new LatencySimulatingSessionHandlerFilter(new TestSessionHandler(sessionId));
-filter.BaseDelay = TimeSpan.FromSeconds(0.2);
-filter.LossRate = 0.05;
-return filter;
+var actualHandler = new TestSessionHandler(param.SessionId);
+return EngineAPI.Networking.BeginSimulatingReceiveLatency(actualHandler, TimeSpan.FromSeconds(0.2), 0.05);
 ```
-`BaseDelay`와 `LossRate`는 아무 때나 바꿀 수 있습니다.
  
 ## 서버 → 클라이언트 전송 레이턴시 시뮬레이션
 서버의 세션이 생성되는 시점, 혹은 아무 때나 아래 엔진 API를 호출하십시오.
