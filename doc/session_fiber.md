@@ -26,3 +26,6 @@
 6. 세션이 파괴되어, `SessionDestroyed` 메서드가 호출됩니다.
 
 7. `SessionDestroyed` 메서드가 리턴하면 드디어 세션 파이버도 종료됩니다.
+
+## 세션 파이버에서 실행될 동작을 바깥에서 등록하기
+`EngineAPI.Networking.SessionHandler.QueueToLocalSession` 을 하세요.
