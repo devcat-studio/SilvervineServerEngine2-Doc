@@ -42,3 +42,56 @@
 ※ 의도는 각 커넥션이 적어도 `$(SessionDuration)`만큼 세션을 붙잡게 하기 위함입니다.
  
 - `$(TestExecutionInterval)`: 한 세션이 보내는 요청 사이의 평균 간격이 T초이고, 기능 테스트 한 번에 요청을 N개 보낼 때, `$(TestExecutionInterval)` 은 T * N 으로 정하면 됩니다.
+
+## 서버 엔진을 사용해서 테스트 클라이언트 만들기
+Connection.NET을 사용해서 테스트 클라이언트를 만드는 것이 가능하지만, 권장하지는 않습니다.
+Connection.NET(클라이언트용 C# 라이브러리)은 게임 클라이언트를 만들기에 편리하도록 설계했기 때문에,
+테스트 클라이언트에는 잘 어울리지 않습니다.
+매 프레임 PerformIO를 호출해야 하고, 받은 메시지가 맥락 없이 콜백으로만 도착하는 점,
+그리고 부하 테스트 클라이언트를 돌리기에 CPU 오버헤드가 너무 큰 문제도 있습니다.
+
+그래서 테스트 클라이언트를 만들기 편리하도록 Connection.NET을 감싼 API를 제공합니다.
+`EngineAPI.TestClient`를 사용하시면 됩니다.
+`EngineAPI.Networking.Listen` 과 `EngineAPI.Loop` 사이에 테스트 클라이언트 파이버를 시작하는 코드를 넣으세요.
+
+다음 예제 코드를 참고하세요.
+```csharp
+var arg = new ConnectionArgument();
+arg.ServerEndpoint = "127.0.0.1:37773";
+arg.GameName = "__SSE2_INTERNAL_NetworkingTest";
+arg.CommunicationTimeoutMS = 1000;
+arg.LoginParameters["TestCase"] = "LoginMePlease";
+
+using (var con = await EngineAPI.TestClient.Connect(arg))
+{
+    con.Send(Encoding.UTF8.GetBytes("메시지1"));
+    con.Send(Encoding.UTF8.GetBytes("메시지2"));
+
+    byte[] rcvd;
+    rcvd = await con.Receive(TimeSpan.FromSeconds(1));
+    Assert.Equal(Encoding.UTF8.GetString(rcvd), "메시지1");
+    rcvd = await con.Receive(TimeSpan.FromSeconds(1));
+    Assert.Equal(Encoding.UTF8.GetString(rcvd), "메시지2");
+
+    await AsyncAssert.MustThrow<TimeoutException>(async () =>
+    {
+        await con.Receive(TimeSpan.FromSeconds(0.1));
+    });
+}
+```
+
+이 예제에서는 메시지를 보내고 받을 때 UTF-8 인코딩/디코딩을 직접 실행하고 있지만,
+여러분의 테스트 클라이언트에서는 여러분의 프로젝트에서 사용하는 프로토콜을 쓰도록 Send와 Receive를 적절히 감싸서,
+다음과 같이 쓰는 것을 권장합니다.
+
+```csharp
+Send(new SomeRequest(...));
+var received = await Receive<SomeResponse>();
+```
+
+응답이 SomeResponse가 아니면 에러가 나게 하거나, 다른 곳에 버퍼링하고 원하는 응답이 올 때까지 기다리게 할 수도 있겠죠.
+요청과 응답을 묶는 프로토콜을 사용하시면 다음과 같은 표현도 좋습니다.
+
+```csharp
+var resp = await Call(new SomeCall(...));
+```
