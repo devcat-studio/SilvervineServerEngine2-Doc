@@ -27,6 +27,7 @@
  * [로깅](doc/db_logging.md)
  * [DB 설계 의도](doc/db_design.md)
  * [DB의 변화와 프로세스 메모리에 있는 객체의 변화를 트랜잭션으로 묶기](doc/db_memory_transaction.md)
+ * [자동 생성된 Row 클래스를 공통 인터페이스로 묶기](doc/db_row_adapter.md)
 
 ## 보조 저장소
  * [보조 저장소 개요](doc/aux_storage_outline.md)
