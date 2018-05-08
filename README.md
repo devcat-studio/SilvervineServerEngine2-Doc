@@ -11,7 +11,7 @@
  * [서버간 통신 - InterServerQueue](doc/inter_server_queue.md)
  * [서버간 통신 - 세션 핸들러에게 메시지 보내기](doc/send_game_logic_message_to_server.md)
  * [네트워킹 설정값 가이드](doc/networking_setting_guide.md)
- * [세션 핸드오버](doc/session_handover.md)
+ * [세션 재연결](doc/session_handover.md)
 
 ## 파이버
  * [async/await](doc/async_await.md)
