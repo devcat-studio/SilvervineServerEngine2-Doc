@@ -22,11 +22,13 @@ EngineAPI.Networking을 사용하면 TCP 연결이 끊기는 경우에 자동으
 
 #### 세션 재연결 대비 장점
 - 게임 서버에 공용 IP를 할당하지 않으면서 로드밸런서 뒤에 놓을 수 있습니다.
-- 게임 경험에 영향을 주지 않으면서 게임 서버를 끄고 업데이트할 수 있습니다. 게임 서버를 끌 때 그 서버에 연결된 세션들이 모두 직렬화되어 저장되고, 클라이언트가 스스로 재접속하면서 다른 프로세스에 복원될 것입니다.
+- 게임 경험에 영향을 주지 않으면서 게임 서버를 끄고 업데이트할 수 있습니다. 게임 서버를 끌 때 그 서버에 연결된 세션들이 모두 직렬화되어 redis에 임시 저장되고, 클라이언트가 스스로 재접속하면서 다른 프로세스에 복원될 것입니다.
 
 #### 사용하는 법
+NetworkingListenSetting.HandoverSetting을 설정해주세요. 이것이 null이면 핸드오버 기능이 꺼집니다.
+
 - 세션 핸들러의 `SessionDestroyed()`에서 인자 `swapOut`이 true로 들어오면, 세션 핸들러를 `byte[]`로 직렬화해서 리턴하도록 합니다.
-- `byte[]`로부터 세션 핸들러를 복원하는 코드를 만들어서 `EngineAPI.Networking.Listen`에 전달합니다.
+- `byte[]`로부터 세션 핸들러를 복원하는 코드(ISessionHandoverProcessor)를 만들어서 `EngineAPI.Networking.Listen`에 넘기는 `NetworkingListenSetting` 안에 들어있는 `SessionHandoverSetting` 에 설정합니다.
 
 #### 제약
 세션 핸들러가 안전하게 다른 서버 프로세스로 이동할 수 있으려면, 세션이 프로세스 안의 다른 부분과 별다른 관계를 맺고 있지 않아야 합니다.
@@ -41,3 +43,33 @@ EngineAPI.Networking을 사용하면 TCP 연결이 끊기는 경우에 자동으
   - 세션이 살아있을 수 있는 최대 시간 + a로 expire 시간을 설정합니다.
 - `EngineAPI.Networking.SessionHandler.SendGameLogicMessageToServer`로 메시지를 확인하라고만 보냅니다.
 - 위 메시지를 수신한 시점, 그리고 세션 핸드오버를 마친 시점에 `EngineAPI.Queue.DequeueAll`로 메시지를 모두 가져와서 하나씩 처리합니다.
+
+#### FAQ
+##### SessionDestroyed()의 인자 swapOutSession은 어떤 경우에 false로 들어오나?
+- 명시적으로 세션 파괴를 명령했을 때
+- 다른 (아마도 새로 만들어진) 세션에서 같은 세션키로 RegisterSession했을 때
+- 세션 핸드오버를 사용하지 않는 옵션으로 Listen했을 때
+
+##### DestroySession에서 null을 리턴하면 어떻게 되나?
+세션이 저장되지 않고 파괴됩니다. 세션의 파괴를 멈출 수는 없습니다.
+
+##### 세션 키란 무엇인가?
+'이 세션을 통해 누가 접속했는가' 를 표현합니다. 세션 id는 매번 세션이 생겨날 때마다 새로 발급되지만, 세션 키는 사용자를 대표합니다. 대체로 사용자 id(사용자의 document id)를 그대로 쓰면 됩니다.
+
+세션 키는 EngineAPI.Networking.SendGameLogicMessageToServer를 통해 다른 서버에 있는 세션을 대상으로 메시지를 보낼 때도 사용됩니다.
+
+##### 세션키가 묶이지 않은 세션도 있을 수 있나?
+세션 핸들러가 처음 생성되었을 때는 아직 여기로 접속한 사람이 누구인지를 모르는 상태이므로, 세션 키가 없는 상태로 초기화됩니다. 세션 키가 없는 세션은 스왑아웃되지 않고, 따라서 핸드오버도 되지 않습니다.
+
+RegisterSessionKey했을 때 비로소 그 세션과 세션 키가 연결됩니다.
+
+##### 세션 핸드오버를 거치지 않고 같은 계정으로 다시 로그인하면 이전 세션은 어떻게 파괴되나?
+`EngineAPI.Networking.CurrentSession.RegisterSessionKey`를 호출할 때, 엔진이 자동으로, 해당 세션키를 이전에 점유하고 있었던 세션에게 세션 파괴 메시지를 보내서 파괴합니다.
+
+그런데 이 과정은 협력적으로 일어납니다. 즉, 이전 점유 세션이 어딘가에 블록되어 있어서 파괴 명령에 응답을 하지 않거나, 혹은 이전 점유 세션이 있는 프로세스가 죽진 않은 채로 정상동작하지 않고 멈춰 있으면, RegisterSessionKey가 여러번 시도해보고 결국 실패를 리턴합니다.
+
+#### BeginDestroySession하고 나서 클라이언트로부터 도착한 메시지에 대해 어떻게 처리해야 하나?
+세션을 파괴하려고 했던 이유가 무엇이었냐에 따라 다르겠지요.
+
+#### SocketDisconnected 이벤트에 어떻게 대응해야 하나?
+세션 핸드오버를 사용하는 게임에서는 이 시점에 `EngineAPI.Networking.BeginSwapOutSession(long sessionId)` 을 통해 강제로 스왑아웃을 시켜주는게 좋습니다.
