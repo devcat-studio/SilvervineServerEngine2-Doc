@@ -16,7 +16,7 @@ DB 접근 등 I/O 대기가 필요한 동작은 파이버를 통해서만 실행
 
 ## 구현
 .NET Framework는 스택풀 코루틴을 지원하지 않지만,
-async/await을 잘 활용해서, **실행 종료를 기다릴 수 있는 async 루틴**들을 연결해서 하나의 실행 흐름으로 느껴지도록 만들었습니다.
+[async 및 await를 이용](https://docs.microsoft.com/ko-kr/dotnet/csharp/programming-guide/concepts/async/)해서, **작업 종료를 기다릴 수 있는 비동기 작업**들을 잘 연결된 하나의 실행 흐름처럼 느껴지게 만들었습니다.
 그리고 여러 파이버가 공유 상태를 안전하게 변경할 수 있도록 하기 위해, 모든 파이버는 **메인 스레드**에서 실행됩니다.
 
 파이버로 실행되는 코드가 메인 스레드를 떠나지 않고 안전하게 실행되게 하기 위해서 지켜야 하는 규칙들이 있습니다.
@@ -24,42 +24,125 @@ async/await을 잘 활용해서, **실행 종료를 기다릴 수 있는 async �
 비정상적인 파이버 전환이 일어난 시점 **이후에** 예외가 발생하기 때문에, 무엇을 잘못했는지 찾아내기가 매우 어렵습니다.
 반드시 아래의 주의사항을 이해하시고 코드를 주의깊게 작성하셔야 합니다.
 
-## 주의사항
-### async void 금지
-C# async 함수는 세 가지 종류의 리턴값 중 하나를 가질 수 있습니다.
-1. async Task: 실행 완료를 기다릴 수 있고, 리턴값 없음
-2. async Task&lt;T>: 실행 완료를 기다릴 수 있고, 리턴값 있음
-3. async void: 실행 완료를 기다릴 수 없음
- 
-async void를 쓰면 파이버로 제대로 실행할 수 없습니다. 소스코드를 전체검색해서 async void가 하나라도 들어있다면 심각한 문제가 있는 것이라고 보셔도 됩니다.
- 
-### 리턴되는 Task를 무시하면 안됨
-파이버를 구성할 async 루틴들이 리턴하는 Task를 무시하면, async void 함수를 호출했을 때와 비슷한 문제가 발생합니다.
-리턴된 Task는 반드시 어디에선가 await되어야 합니다. 받은 Task를 그 자리에서 바로 await하거나, 아니면 바로 리턴함으로써 나를 호출한 함수가 그 Task를 기다릴 수 있도록 하세요.
- 
-### 세션핸들러에서는 null을 리턴해도 됨
-ISessionHandler 보시면 모든 메서드에 Task가 달려 있지요.
-파이버 안에서 실행되는 친구들입니다.
-따라서 async Task로 만들어야 하는데요,
-세션핸들러에 대해서는 엔진에서 특수 처리를 해놓았기 때문에,
-리턴되는 Task가 null이면 await하지 않고 바로 진행하게 되어 있습니다.
- 
-모바일 게임이라면 클라이언트가 보낸 모든 요청에서 DB에 접근해야 하니까 언제나 실행 중지/재개가 필요하지만,
-MMORPG라면 DB에 접근하는 요청보다는 메모리에서 처리가 끝나는 요청들이 더 많을 것입니다.
-그런 요청 하나하나마다 파이버를 중지/재개하는 비용이 걱정된다면 그냥 async 키워드를 떼고, Task에는 null을 리턴해도 됩니다.
+## 실버바인 서버엔진 2의 비동기 작업 반환 형식
 
-### 다른 라이브러리가 리턴한 Task에는 .ToMainThread() 를 부르자
-모든 파이버가 메인 스레드에서 실행된다고 말씀드렸습니다.
-그런데 실버바인 서버엔진 2가 아닌 다른 .NET 태스크 라이브러리는, `Task`를 사용해서 `await`하고 나면
-그 이후에는 스케줄러를 통해서 다른 스레드로 바뀌어 실행되기 때문에,
-정상적으로 실행하기 어렵습니다.
+실버바인 서버엔진 2는 **파이버에서 실행되는 비동기 작업**으로 쓰일 반환 형식으로 다음과 같은 형식을 제공합니다.
 
-메인 스레드로 돌아오려면 리턴된 `Task`에 `.ToMainThread()`를 호출한 결과에 `await`하게 만들면 됩니다.
+- `FTvoid`: 파이버 안에서 작업 완료를 기다리고 값을 반환하지 않습니다.
+- `FT<TResult>`: 파이버 안에서 작업 완료를 기다리고 값을 반환합니다.
+
+C#이 기본적으로 제공하는 [비동기 메서드의 반환 형식](https://docs.microsoft.com/ko-kr/dotnet/csharp/programming-guide/concepts/async/async-return-types)으로는 다음과 같은 것들이 있지만 실버바인 서버엔진 2 안에서는 사용하지 않습니다.
+
+- [Task\<TResult>](https://docs.microsoft.com/ko-kr/dotnet/api/system.threading.tasks.task-1): 작업 완료를 기다리고 값을 반환합니다.
+- [Task](https://docs.microsoft.com/ko-kr/dotnet/api/system.threading.tasks.task): 작업 완료를 기다리고 값을 반환하지 않습니다.
+- void: 작업의 완료를 기다리지 않고, 기다릴 수 없습니다.
+
+### 반환된 `FTvoid`, `FT<TResult>` 작업은 반드시 `await`
+
+어떤 메서드가 반환한 `FTvoid`, `FT<TResult>` 작업은 완료되기 전까지 일시 중단될 수 있고 `await` 식으로 완료를 기다려야 메서드 호출 전에 실행 중이던 파이버 안에서 계속 실행될 것이 보장됩니다.
+
+```csharp
+
+async FTVoid WaitForOneSecond()
+{
+    var task = EngineAPI.Fibering.Sleep(1.sec());
+    // 메서드가 시작될 때의 파이버가 아닌 곳에서 실행된다.
+    await task; // 작업을 기다린다.
+    // 메서드가 시작될 때의 파이버에서 실행된다.
+}
+```
+
+비동기 메서드의 모든 내용이 파이버 안에서 실행되도록
+
+- 반환받은 `FTvoid`, `FT<TResult>` 작업을 바로 `await` 연산자로 기다리거나,
+- `return` 문으로 제어를 호출 메서드에게 반환해
+
+호출 메서드가 `FTvoid`, `FT<TResult>` 작업을 기다리도록 하십시오.
+
+모든 `FTvoid`, `FT<TResult>`는 메인 스레드의 정해진 파이버에서 실행되므로 .NET의 `Task`처럼 여러 개의 작업을 병렬로 실행한 뒤 모두 완료되기를 기다리거나 하는 기능은 제공되지 않습니다.
+
+### `async void`를 쓰면 안 되는 이유
+
+`async void`는 [`await` 연산자](https://docs.microsoft.com/ko-kr/dotnet/csharp/language-reference/keywords/await)를 사용할 수 없는 [이벤트 처리기에만 사용](https://docs.microsoft.com/ko-kr/dotnet/csharp/async#important-info-and-advice)해야 하는데 실버바인 서버엔진 2에서는 이벤트 패턴을 사용하지 않습니다.
+`async void` 메서드를 호출하면 파이버 안에서 메서드가 계속 실행되는 것을 보장하지 못합니다.
+`async void` 메서드에서 일어나는 작업의 완료는 기다릴 수 없고, 이 작업은 [스레드 풀](https://docs.microsoft.com/ko-kr/dotnet/standard/threading/the-managed-thread-pool)에서 작업이 완료될 수 있습니다.
+소스 코드에 전체 검색으로 `async void`를 찾았을 때 하나라도 발견됐다면 **메인 스레드에서 실행되지 않아 공유 상태가 망가지는** 심각한 문제가 있다고 생각하셔도 됩니다.
+
+### 파이버 밖에서 실행되는 메서드에서 `FTvoid`, `FT<TResult>` 호출 금지
+
+[`async` 한정자](https://docs.microsoft.com/ko-kr/dotnet/csharp/language-reference/keywords/async)를 사용해 `Task`, `Task<TResult>` 작업을 반환하는 비동기 함수 안에서 `FTvoid`, `FT<TResult>`를 호출할 수 없습니다. 모든 파이버 작업은 메인 스레드의 정해진 파이버에서 실행돼야 하는데 `Task`, `Task<TResult>`는 파이버는 물론이고 메인 스레드에서 실행되고 있을 것을 보장하지 않습니다.
+
+메인 스레드 밖에서 실행되는 메서드가 메인 스레드에서 어떤 작업을 실행하려고 할 때에는 `EngineAPI.EnqueueFromOtherThread`를 사용할 수 있고, 메인 스레드에서는 `EngineAPI.Fibering.Begin`으로 새 파이버를 시작할 수 있습니다.
+
+```csharp
+
+EngineAPI.EnqueueFromOtherThread(() => {
+    EngineAPI.Fibering.Begin("파이버 이름", async () => {
+        …
+    });
+});
+```
+
+### 파이버 안에서 실행되는 메서드 안에서 `Task`, `Task<TResult>`를 사용하는 방법
+
+[`async` 한정자](https://docs.microsoft.com/ko-kr/dotnet/csharp/language-reference/keywords/async)를 사용해 `FTvoid`, `FT<TResult>`를 반환하는 비동기 메서드는 모두 정해진 파이버 안에서 실행돼야 합니다.
+메서드 안에서 일시 중단되는 `await` 식이 `Task`, `Task<TResult>`를 기다릴 경우 `await`에 연속된 작업이 다른 스레드에서 실행될 수 있어 메인 스레드의 정해진 파이버에서 실행돼야한다는 규칙이 깨져 정상적으로 실행되지 않게 됩니다.
+
+그런데, `Task`, `Task<TResult>` 작업을 반환하는 다른 .NET 라이브러리들을 실버바인 서버엔진 2와 함께 사용해야할 경우가 있습니다.
+이 경우에는 작업이 끝나고 다시 파이버에서 실행되도록 만들어 놓은 ToMainThread 확장 메서드를 사용하면 `Task`를 `FTvoid`로, `Task<TResult>`를 `FT<TResult>`로 변환할 수 있습니다.
 
 #### 주의가 필요한 라이브러리의 예
- * `~Async`:<br>
- ![AWS S3 SDK](../img/thirdparty_async_library_example.png)<br>
- 이 예는 AWS S3 SDK에서 가져왔습니다. `PutObjectAsync(...)`의 리턴 타입이 `Task<T>`인데,
- 이것을 `await`하면 다른 스레드로 바뀌어 버립니다.
- 리턴된 `Task<T>`에 `.ToMainThread()`를 호출한 것을 `await` 하여, 메인 스레드로 돌아오도록 합시다.
- 
+
+ * `…Async`:  
+   ![AWS S3 SDK](../img/thirdparty_async_library_example.png)  
+   이 예는 AWS S3 SDK에서 가져왔습니다.
+
+   ```csharp
+
+   {
+       await PutObjectAsync(request, CancellationToken.None);
+       // 다른 스레드에서 실행
+   }
+   ```
+
+   과 같이 반환된 `Task<PutObjectResponse>` 작업을 await하면 기다린 다음 다른 스레드에서 연속 작업이 실행됩니다.
+   이와 같은 문제를 해결하기 위해
+
+   ```csharp
+
+   {
+       await PutObjectAsync(request, CancellationToken.None).ToMainThread();
+       // 메인 스레드·일시 중단 전에 실행 중이던 파이버에서 실행
+   }
+   ```
+
+   반환된 `Task<PutObjectResponse>`에 `ToMainThread()`확장 메서드를 호출해 변환된 `FT<PutObjectResponse>`를 `await` 하면 메인 스레드의 파이버에서 연속 작업이 실행됩니다.
+
+### 세션핸들러에서는 null을 리턴 가능
+
+`ISessionHandler` 인터페이스의 모든 메서드들은 `FTvoid`, `FT<TResult>` 형식을 반환합니다.
+따라서 이 메서드들은 모두 파이버 안에서 실행됩니다.
+세션핸들러의 메서드들은 엔진에서 특별하게 처리해 `null`이 반환될 경우 `await`하지 않고 바로 이어서 진행하고 있습니다.
+
+모바일 게임이라면 클라이언트가 보낸 모든 요청에서 DB에 접근해야 하니까 언제나 실행 중지/재개가 필요하겠지만,
+
+```csharp
+
+async FTvoid ReceivedGameLogic(Payload payload)
+{
+    await …;
+}
+```
+
+MMORPG라면 DB에 접근하는 요청보다는 메모리에서 처리가 끝나는 요청들이 더 많을 것입니다.
+
+```csharp
+
+FTvoid ReceivedGameLogic(Payload payload)
+{
+    …;
+    return null;
+}
+```
+
+불필요하게 파이버를 중지했다가 다시 시작하는 맥락 전환하는 비용이 걱정된다면 동기적으로 실행될 때 `async` 한정자를 사용한 비동기 메서드 대신, `null`을 반환하는 메서드로 구현해도 됩니다.
