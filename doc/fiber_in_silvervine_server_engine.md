@@ -61,6 +61,11 @@ async FTVoid WaitForOneSecond()
 
 모든 `FTvoid`, `FT<TResult>`는 메인 스레드의 정해진 파이버에서 실행되므로 .NET의 `Task`처럼 여러 개의 작업을 병렬로 실행한 뒤 모두 완료되기를 기다리거나 하는 기능은 제공되지 않습니다.
 
+#### `FTvoid`, `FT<TTesult>` 작업을 `await`하지 않았을 때
+
+`await`으로 완료를 기다리지 않은 파이버 작업은 실행 시간에 엔진 경고를 일으킵니다.
+`EngineAPI.Config.EnableFiberingStackTrace` 속성을 `true`로 켜면 파이버 작업을 만들 당시의 호출 스택이 경고에 포함돼 `await`을 빠트린 코드를 확인할 수 있습니다.
+
 ### `async void`를 쓰면 안 되는 이유
 
 `async void`는 [`await` 연산자](https://docs.microsoft.com/ko-kr/dotnet/csharp/language-reference/keywords/await)를 사용할 수 없는 [이벤트 처리기에만 사용](https://docs.microsoft.com/ko-kr/dotnet/csharp/async#important-info-and-advice)해야 하는데 실버바인 서버엔진 2에서는 이벤트 패턴을 사용하지 않습니다.
