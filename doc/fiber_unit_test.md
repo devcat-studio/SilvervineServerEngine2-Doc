@@ -26,25 +26,30 @@ public async FTvoid ExampleTest()
 
 ```csharp
 
-var ft = new FiberTest(false);
-
-for (var i = 0; i < FIBER_COUNT; ++i)
+[Test]
+public void PerformanceTest()
 {
-    ft.Begin($"#{i}", async () =>
+    var ft = new FiberTest(false);
+
+    for (var i = 0; i < FIBER_COUNT; ++i)
+    {
+        ft.Begin($"#{i}", async () =>
+        {
+            …
+        });
+    }
+
+    try
+    {
+        ft.Loop();
+    }
+    catch (AggregateException)
     {
         …
-    });
-}
-
-try
-{
-    ft.Loop();
-}
-catch (AggregateException)
-{
-    …
+    }
 }
 ```
 
 `FiberTest.Begin` 메서드로 실행한 파이버들은 모두 동시에 실행됩니다.
 또한, `FiberTest.Loop` 메서드는 해당 `FiberTest` 개체에서 시작된 파이버들이 모두 종료될 때까지 엔진 이벤트 처리 루프를 실행합니다.
+이벤트 처리 루프가 메인 스레드에서만 실행 가능하고 파이버 안에서는 실행할 수 없기 때문에 `FiberTest`를 사용하는 테스트는 `FTvoid` 형식을 반환할 수 없습니다.
