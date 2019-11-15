@@ -1,6 +1,5 @@
 # 실버바인 서버엔진 2
-## 슬라이드
- * http://ndcreplay.nexon.com/NDC2018/sessions/NDC2018_0075.html
+ [실버바인 서버 엔진 2 설계 리뷰 (NDC2018)](http://ndcreplay.nexon.com/NDC2018/sessions/NDC2018_0075.html)
 
 ## 네트워킹
  * 네트워킹 개요
