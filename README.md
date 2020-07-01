@@ -59,6 +59,9 @@
  * Http 서버 열기
  * 웹소켓 핸들링하기
 
+## 환경
+ * [환경 개요](doc/environment_outline.md)
+
 ## 스크립팅
  * [서버에서 루아 스크립트 사용하기](doc/lua_scripting.md)
 
